@@ -42,7 +42,7 @@ fun ListaScreen(navController: NavController) {
                         gender = person.gender,
                         age = person.age,
                         modifier = Modifier.clickable {
-                            navController.navigate("detalles") // Navega a `DetallesScreen`
+                            navController.navigate("detalles") // Navega a `DetallesScreen 1`
                         }
                     )
                 }

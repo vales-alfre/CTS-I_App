@@ -14,7 +14,6 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-        multiDexEnabled= true
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -31,8 +30,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
-        sourceCompatibility= JavaVersion.VERSION_1_8
-                targetCompatibility= JavaVersion.VERSION_1_8
+
     }
     kotlinOptions {
         jvmTarget = "11"
@@ -43,7 +41,7 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:<latest-version>'
+    coreLibraryDesugaring ("com.android.tools:desugar_jdk_libs:2.0.1")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -56,7 +54,9 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.2.0")
     implementation("androidx.compose.foundation:foundation:1.5.0")
     implementation("com.google.accompanist:accompanist-pager:0.31.1-alpha")
-    implementation("com.kizitonwose.calendar:compose:2.1.0")
+    implementation("androidx.compose.ui:ui:1.5.0")
+    implementation("androidx.compose.material3:material3:1.2.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
     implementation(libs.androidx.material3)
     implementation(libs.android)
     testImplementation(libs.junit)
