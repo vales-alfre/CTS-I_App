@@ -1,6 +1,8 @@
 package com.example.app
 
 import HeartRateScreen
+import OxygenScreen
+import TemperatureScreen
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
@@ -76,6 +78,8 @@ fun AppNavigation() {
         composable("ubicacion") { UbicacionScreen(navController) }
         composable("agenda") { AgendaScreen(navController) }
         composable("Monitor Cardíaco") { HeartRateScreen(navController) }
+        composable("Monitor de Temperatura") { TemperatureScreen(navController)}
+        composable("Oxigenación Sanguínea") { OxygenScreen(navController)}
 
     }
 }

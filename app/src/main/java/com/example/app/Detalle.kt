@@ -55,7 +55,8 @@ fun DetallesScreen(navController: NavController) {
                 ) {
                     SensorCard("Ritmo Cardíaco", "75 bpm", R.drawable.ritmo, Color(0xFFFFA07A)) {
                         navController.navigate("Monitor Cardíaco")}
-                    SensorCard("Temperatura", "36.6°C", R.drawable.temperatura, Color(0xFFFFD700)) { }
+                    SensorCard("Temperatura", "36.6°C", R.drawable.temperatura, Color(0xFFFFD700)) {
+                        navController.navigate("Monitor de Temperatura")}
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
@@ -73,7 +74,9 @@ fun DetallesScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    SensorCard("Oxigenación", "98%", R.drawable.po2, Color(0xFF25575C)) { }
+                    SensorCard("Oxigenación", "98%", R.drawable.po2, Color(0xFF25575C)) {
+                        navController.navigate("Oxigenación Sanguínea")
+                    }
                     SensorCard("Ubicación", "Ver ubicación", R.drawable.location, Color(0xFF449FA8)) {
                         navController.navigate("ubicacion") // 🔹 Navega a la pantalla del mapa
                     }

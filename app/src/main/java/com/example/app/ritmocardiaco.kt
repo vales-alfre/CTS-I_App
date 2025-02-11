@@ -1,4 +1,5 @@
-// Importaciones corregidas (eliminar duplicados y conflictos)
+
+import android.graphics.Paint
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -46,15 +47,16 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import kotlinx.coroutines.delay
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
-// Función principal corregida
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HeartRateScreen(navController: NavController) {
@@ -114,6 +116,7 @@ fun HeartRateScreen(navController: NavController) {
                     .fillMaxWidth()
                     .height(280.dp)
                     .padding(horizontal = 16.dp)
+
             )
 
             TimeLabels(modifier = Modifier.padding(16.dp))
@@ -121,7 +124,6 @@ fun HeartRateScreen(navController: NavController) {
     }
 }
 
-// Funciones auxiliares corregidas
 @Composable
 private fun CurrentStatusCard(currentBpm: Int, modifier: Modifier = Modifier) {
     val statusColor = getStatusColor(currentBpm)
@@ -223,43 +225,83 @@ private fun CurrentStatusCard(currentBpm: Int, modifier: Modifier = Modifier) {
 
 @Composable
 private fun HeartRateChart(data: List<Int>, modifier: Modifier = Modifier) {
-    val maxY = (data.maxOrNull() ?: 100) + 20
-    val minY = (data.minOrNull() ?: 60) - 20
+    val maxY = (data.maxOrNull() ?: 100) + 20.0
+    val minY = (data.minOrNull() ?: 60) - 20.0
     val lineColor = MaterialTheme.colorScheme.primary
     val gridColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)
+    val textColor = MaterialTheme.colorScheme.onSurfaceVariant
 
-    Canvas(modifier = modifier) {
+    Canvas(modifier = modifier.fillMaxWidth().height(280.dp)
+    ) {
         val canvasWidth = size.width
         val canvasHeight = size.height
+        val chartPadding = 20.dp.toPx()
 
+        // Fondo degradado
         drawRect(
             brush = Brush.verticalGradient(
                 colors = listOf(
-                    Color(0xFFE8F5E9).copy(alpha = 0.4f), // Verde claro
+                    Color(0xFFE8F5E9).copy(alpha = 0.4f),
                     Color(0xFFF1F8E9).copy(alpha = 0.2f)
                 )
             ),
             size = size
         )
 
+        // Configuración del texto para eje izquierdo
+        val textPaint = Paint().apply {
+            color = textColor.hashCode()
+            textSize = 30f
+            textAlign = Paint.Align.LEFT // Cambiado a izquierda
+            isAntiAlias = true
+        }
+
+        // Dibujar valores en el eje izquierdo
+        val steps = 4
+        val stepValue = (maxY - minY) / steps
+        repeat(steps + 1) { i ->
+            val value = (minY + (stepValue * i)).roundToInt()
+            val yPosition = canvasHeight - ((value - minY.toFloat()) / (maxY - minY).toFloat()) * canvasHeight
+
+            // Líneas guía
+            drawLine(
+                start = Offset(60f, yPosition), // Margen izquierdo para el texto
+                end = Offset(canvasWidth - chartPadding, yPosition),
+                color = gridColor.copy(alpha = 0.3f),
+                strokeWidth = 1.dp.toPx()
+            )
+
+            // Texto de valores (izquierda)
+            drawContext.canvas.nativeCanvas.drawText(
+                "$value",
+                40f, // Posición X izquierda
+                yPosition + 15f,
+                textPaint
+            )
+        }
+
+        // Cuadrícula principal
         val gridLines = 4
         repeat(gridLines + 1) { i ->
             val yPos = canvasHeight * (i.toFloat() / gridLines)
             drawLine(
                 color = gridColor,
                 start = Offset(0f, yPos),
-                end = Offset(canvasWidth, yPos),
+                end = Offset(canvasWidth - chartPadding, yPos),
                 strokeWidth = 1.dp.toPx()
             )
         }
 
+        // Puntos de datos (sin cambios)
+
         val dataPoints = data.mapIndexed { index, value ->
             Offset(
-                x = (canvasWidth / (data.size - 1)) * index,
-                y = canvasHeight - ((value - minY).toFloat() / (maxY - minY)) * canvasHeight
+                x = ((canvasWidth - chartPadding) / (data.size - 1)) * index + chartPadding/2,
+                y = (canvasHeight - ((value - minY) / (maxY - minY)) * canvasHeight).toFloat()
             )
         }
 
+        // Línea suavizada (sin cambios)
         val path = Path().apply {
             dataPoints.forEachIndexed { index, offset ->
                 when (index) {
@@ -278,6 +320,8 @@ private fun HeartRateChart(data: List<Int>, modifier: Modifier = Modifier) {
             }
         }
 
+        // Resto del código sin cambios...
+        // Sombra de la línea
         drawPath(
             path = path,
             color = lineColor.copy(alpha = 0.2f),
@@ -288,6 +332,7 @@ private fun HeartRateChart(data: List<Int>, modifier: Modifier = Modifier) {
             )
         )
 
+        // Línea principal
         drawPath(
             path = path,
             color = lineColor,
@@ -298,6 +343,7 @@ private fun HeartRateChart(data: List<Int>, modifier: Modifier = Modifier) {
             )
         )
 
+        // Puntos interactivos
         dataPoints.forEach { point ->
             drawCircle(
                 brush = Brush.radialGradient(
@@ -310,13 +356,15 @@ private fun HeartRateChart(data: List<Int>, modifier: Modifier = Modifier) {
                 )
             )
             drawCircle(
-                color =  Color(0xFFE8F5E9).copy(alpha = 0.4f),
+                color = Color(0xFFE8F5E9).copy(alpha = 0.4f),
                 radius = 6f,
                 center = point
             )
         }
     }
 }
+
+
 
 @Composable
 private fun TimeLabels(modifier: Modifier = Modifier) {
