@@ -28,12 +28,15 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility =JavaVersion.VERSION_1_8
 
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
+        jvmTarget = "1.8"
     }
     buildFeatures {
         compose = true
@@ -41,7 +44,7 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring ("com.android.tools:desugar_jdk_libs:2.0.1")
+    coreLibraryDesugaring ("com.android.tools:desugar_jdk_libs:2.0.3")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -52,11 +55,17 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation("com.mapbox.maps:android:10.13.0")
     implementation("androidx.compose.material3:material3:1.2.0")
-    implementation("androidx.compose.foundation:foundation:1.5.0")
+    implementation("androidx.compose.foundation:foundation:1.6.1")
     implementation("com.google.accompanist:accompanist-pager:0.31.1-alpha")
-    implementation("androidx.compose.ui:ui:1.5.0")
+    implementation("androidx.compose.ui:ui:1.6.1")
+    implementation ("androidx.compose.ui:ui-tooling:1.6.1")
+    implementation ("androidx.compose.ui:ui-util:1.6.1")
     implementation("androidx.compose.material3:material3:1.2.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+    implementation ("io.github.vanpra.compose-material-dialogs:datetime:0.9.0")
+    implementation ("com.google.android.material:material:1.9.0")
+    implementation ("androidx.compose.material3:material3:1.1.2")
+    implementation ("com.kizitonwose.calendar:compose:2.4.0")
     implementation(libs.androidx.material3)
     implementation(libs.android)
     testImplementation(libs.junit)
