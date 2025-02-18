@@ -16,22 +16,41 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.app.network.ApiClient
+import com.example.app.network.model.PacienteCuidadorRelacion
 
 @Composable
 fun ListaScreen(navController: NavController) {
-    val peopleList = listOf(
-        Person("Valeska chica", "Femenino", 38),
-        Person("Juan Pérez", "Masculino", 45),
-        Person("María López", "Femenino", 29),
-        Person("Carlos Méndez", "Masculino", 50),
-        Person("Ana Gómez", "Femenino", 33)
-    )
+    var pacientes by remember { mutableStateOf<List<PacienteCuidadorRelacion>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        try {
+            isLoading = true
+            val response = ApiClient.instance.getPacientes()
+            if (response.isSuccessful) {
+                pacientes = response.body() ?: emptyList()
+            } else {
+                error = "Error al cargar los pacientes"
+            }
+        } catch (e: Exception) {
+            error = e.message
+        } finally {
+            isLoading = false
+        }
+    }
 
     Scaffold(
         bottomBar = { BottomNavBar(navController) }
@@ -45,13 +64,16 @@ fun ListaScreen(navController: NavController) {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(peopleList) { person ->
+                items(pacientes) { relacion ->
+                    val paciente = relacion.Paciente.User
                     CardItem(
-                        name = person.name,
-                        gender = person.gender,
-                        age = person.age,
+                        name = "${paciente.firstname} ${paciente.lastname}",
+                        gender = paciente.gender,
+                        // Aquí podrías calcular la edad basada en birthdate
+                        // Por ahora mostraremos la fecha de nacimiento
+                        birthdate = paciente.birthdate,
                         modifier = Modifier.clickable {
-                            navController.navigate("detalles") // Navega a `DetallesScreen 1`
+                            navController.navigate("detalles/${relacion.PacienteID}")
                         }
                     )
                 }
@@ -61,14 +83,19 @@ fun ListaScreen(navController: NavController) {
 }
 
 @Composable
-fun CardItem(name: String, gender: String, age: Int, modifier: Modifier = Modifier) {
+fun CardItem(
+    name: String,
+    gender: String,
+    birthdate: String,
+    modifier: Modifier = Modifier
+) {
     Card(
         shape = RoundedCornerShape(12.dp),
         modifier = modifier
             .fillMaxWidth()
             .padding(8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF449FA8) // Nurse-Enfermeria-1-hex (Turquesa)
+            containerColor = Color(0xFF449FA8)
         ),
         elevation = CardDefaults.cardElevation(8.dp)
     ) {
@@ -90,12 +117,10 @@ fun CardItem(name: String, gender: String, age: Int, modifier: Modifier = Modifi
                 color = Color.White
             )
             Text(
-                text = "Edad: $age años",
+                text = "Fecha de nacimiento: $birthdate",
                 fontSize = 16.sp,
                 color = Color.White
             )
         }
     }
 }
-
-data class Person(val name: String, val gender: String, val age: Int)

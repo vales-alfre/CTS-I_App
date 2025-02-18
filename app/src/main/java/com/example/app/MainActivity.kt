@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,11 +46,17 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.app.network.ApiClient
+import com.example.app.network.LoginRequest
 import com.example.app.ui.theme.AppTheme
+import com.example.app.util.SessionManager
+import kotlinx.coroutines.launch
+
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -73,7 +81,9 @@ fun AppNavigation() {
         composable("login") { LoginScreen(navController) }
         composable("perfil") { PerfilScreen(navController) }
         composable("lista") { ListaScreen(navController) }
-        composable("detalles") { DetallesScreen(navController) }
+        composable("detalles/{pacienteId}") { backStackEntry ->
+            val pacienteId = backStackEntry.arguments?.getString("pacienteId")
+            DetallesScreen(navController, pacienteId)}
         composable("lista_medicamentos") { ListaMedicamentosScreen() }
         composable("ubicacion") { UbicacionScreen(navController) }
         composable("agenda") { AgendaScreen(navController) }
@@ -84,6 +94,7 @@ fun AppNavigation() {
     }
 }
 
+@androidx.annotation.OptIn(UnstableApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,6 +102,15 @@ fun LoginScreen(navController: NavHostController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+
+    fun isValidEmail(email: String): Boolean {
+        val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\$"
+        return email.matches(emailRegex.toRegex())
+    }
 
     Scaffold(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -100,21 +120,19 @@ fun LoginScreen(navController: NavHostController) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Logo
             Image(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground), // Reemplaza con tu imagen
+                painter = painterResource(id = R.drawable.ic_launcher_foreground),
                 contentDescription = "Logo",
                 modifier = Modifier.size(120.dp)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-
             Text(
                 text = "Login",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontSize = 24.sp,
-                    color = Color(0xFF25575C) // Nurse-Enfermeria-3-hex
+                    color = Color(0xFF25575C)
                 ),
                 textAlign = TextAlign.Center
             )
@@ -123,51 +141,126 @@ fun LoginScreen(navController: NavHostController) {
 
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
-                label = { Text("Correo electrónico", color = Color(0xFF537275)) }, // Nurse-Enfermeria-2-hex
+                onValueChange = {
+                    email = it
+                    emailError = null // Limpiar error al editar
+                },
+                label = { Text("Correo electrónico", color = Color(0xFF537275)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = Color(0xFF0099A8), // Nurse-Enfermeria-4-hex
-                    unfocusedBorderColor = Color(0xFF537275) // Nurse-Enfermeria-2-hex
-                )
+                    focusedBorderColor = if (emailError != null) Color.Red else Color(0xFF0099A8),
+                    unfocusedBorderColor = if (emailError != null) Color.Red else Color(0xFF537275)
+                ),
+                supportingText = {
+                    emailError?.let {
+                        Text(
+                            text = it,
+                            color = Color.Red,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
-                label = { Text("Contraseña", color = Color(0xFF537275)) }, // Nurse-Enfermeria-2-hex
+                onValueChange = {
+                    password = it
+                    passwordError = null // Limpiar error al editar
+                },
+                label = { Text("Contraseña", color = Color(0xFF537275)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
                             painter = painterResource(
-                                id = if (passwordVisible) R.drawable.baseline_visibility_24 else R.drawable.baseline_visibility_off_24
+                                id = if (passwordVisible) R.drawable.baseline_visibility_24
+                                else R.drawable.baseline_visibility_off_24
                             ),
                             contentDescription = "Toggle password visibility",
-                            tint = Color(0xFF0099A8) // Nurse-Enfermeria-4-hex
+                            tint = Color(0xFF0099A8)
                         )
                     }
                 },
                 colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = Color(0xFF0099A8), // Nurse-Enfermeria-4-hex
-                    unfocusedBorderColor = Color(0xFF537275) // Nurse-Enfermeria-2-hex
-                )
+                    focusedBorderColor = if (passwordError != null) Color.Red else Color(0xFF0099A8),
+                    unfocusedBorderColor = if (passwordError != null) Color.Red else Color(
+                        0xFF537275
+                    )
+                ),
+                supportingText = {
+                    passwordError?.let {
+                        Text(
+                            text = it,
+                            color = Color.Red,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { navController.navigate("perfil") },
+                onClick = {
+                    // Validaciones locales primero
+                    emailError = when {
+                        email.isEmpty() -> "El correo electrónico es requerido"
+                        !isValidEmail(email) -> "Formato de correo electrónico inválido"
+                        else -> null
+                    }
+
+                    passwordError = when {
+                        password.isEmpty() -> "La contraseña es requerida"
+                        password.length < 6 -> "La contraseña debe tener al menos 6 caracteres"
+                        else -> null
+                    }
+
+                    if (emailError == null && passwordError == null) {
+                        isLoading = true
+                        coroutineScope.launch {
+                            try {
+                                val response = ApiClient.instance.login(
+                                    LoginRequest(email, password)
+                                )
+                                if (response.isSuccessful) {
+                                    val authResponse = response.body() // Retrofit deserializa automáticamente
+                                    authResponse?.user?.let { user -> SessionManager.login(user)
+                                        println("El ID del usuario es: ${SessionManager.getCurrentUser()}")
+                                    navController.navigate("perfil")
+                                    } ?: run {
+                                        passwordError = "Error: No se pudo obtener la información del usuario"
+                                    }
+                                } else {
+                                    passwordError = "Error en la autenticación: ${response.code()}"
+                                }
+                            } catch (e: Exception) {
+                                // Manejar errores de red
+                                passwordError = "Error de conexión: ${e.message}"
+                            } finally {
+                                isLoading = false
+                            }
+                        }
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0099A8)) // Nurse-Enfermeria-4-hex
+                enabled = !isLoading,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF0099A8)
+                )
             ) {
-                Text(text = "Iniciar sesión", color = Color.White)
+                if (isLoading) {
+                    CircularProgressIndicator(color = Color.White)
+                } else {
+                    Text(text = "Iniciar sesión", color = Color.White)
+                }
             }
         }
     }

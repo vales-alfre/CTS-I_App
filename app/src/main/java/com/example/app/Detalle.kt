@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @Composable
-fun DetallesScreen(navController: NavController) {
+fun DetallesScreen(navController: NavController, pacienteId: String?) {
     Scaffold { paddingValues ->
         Column(
             modifier = Modifier
