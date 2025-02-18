@@ -84,9 +84,15 @@ fun AppNavigation() {
         composable("detalles/{pacienteId}") { backStackEntry ->
             val pacienteId = backStackEntry.arguments?.getString("pacienteId")
             DetallesScreen(navController, pacienteId)}
-        composable("lista_medicamentos") { ListaMedicamentosScreen() }
+        composable("lista_medicamentos/{pacienteId}") { backStackEntry ->
+            val pacienteId = backStackEntry.arguments?.getString("pacienteId")
+            ListaMedicamentosScreen(navController, pacienteId)
+        }
         composable("ubicacion") { UbicacionScreen(navController) }
-        composable("agenda") { AgendaScreen(navController) }
+        composable("agenda/{pacienteId}") { backStackEntry ->
+            val pacienteId = backStackEntry.arguments?.getString("pacienteId")
+            AgendaScreen(navController, pacienteId)
+        }
         composable("Monitor Cardíaco") { HeartRateScreen(navController) }
         composable("Monitor de Temperatura") { TemperatureScreen(navController)}
         composable("Oxigenación Sanguínea") { OxygenScreen(navController)}

@@ -29,6 +29,15 @@ import androidx.navigation.NavController
 
 @Composable
 fun DetallesScreen(navController: NavController, pacienteId: String?) {
+    if (pacienteId == null) {
+        Text(
+            text = "Error: ID de paciente no válido",
+            color = Color.Red,
+            modifier = Modifier.padding(16.dp)
+        )
+        return
+    }
+
     Scaffold { paddingValues ->
         Column(
             modifier = Modifier
@@ -37,7 +46,6 @@ fun DetallesScreen(navController: NavController, pacienteId: String?) {
                 .padding(16.dp),
             horizontalAlignment = Alignment.Start
         ) {
-            // Botón de Volver
             Button(
                 onClick = { navController.popBackStack() },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF537275))
@@ -53,39 +61,78 @@ fun DetallesScreen(navController: NavController, pacienteId: String?) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    SensorCard("Ritmo Cardíaco", "75 bpm", R.drawable.ritmo, Color(0xFFFFA07A)) {
-                        navController.navigate("Monitor Cardíaco")}
-                    SensorCard("Temperatura", "36.6°C", R.drawable.temperatura, Color(0xFFFFD700)) {
-                        navController.navigate("Monitor de Temperatura")}
+                    SensorCard(
+                        "Ritmo Cardíaco",
+                        "75 bpm",
+                        R.drawable.ritmo,
+                        Color(0xFFFFA07A)
+                    ) {
+                        // Asegurarse de que el ID se pase en la navegación
+                        navController.navigate("monitor_cardiaco/$pacienteId")
+                    }
+                    SensorCard(
+                        "Temperatura",
+                        "36.6°C",
+                        R.drawable.temperatura,
+                        Color(0xFFFFD700)
+                    ) {
+                        navController.navigate("monitor_temperatura/$pacienteId")
+                    }
                 }
+
                 Spacer(modifier = Modifier.height(16.dp))
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    SensorCard("Agenda", "Ver tu agenda", R.drawable.agenda, Color(0xFF63E8F5)) {
-                        navController.navigate("agenda") }
-                    SensorCard("Medicamentos", "Lista de medicamentos", R.drawable.medicina, Color(0xFF0099A8)) {
-                        navController.navigate("lista_medicamentos") // Navegar a la lista de medicamentos
+                    SensorCard(
+                        "Agenda",
+                        "Ver tu agenda",
+                        R.drawable.agenda,
+                        Color(0xFF63E8F5)
+                    ) {
+                        // Navegación a Agenda con ID
+                        navController.navigate("agenda/$pacienteId")
+                    }
+                    SensorCard(
+                        "Medicamentos",
+                        "Lista de medicamentos",
+                        R.drawable.medicina,
+                        Color(0xFF0099A8)
+                    ) {
+                        // Navegación a Medicamentos con ID
+                        navController.navigate("lista_medicamentos/$pacienteId")
                     }
                 }
+
                 Spacer(modifier = Modifier.height(16.dp))
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    SensorCard("Oxigenación", "98%", R.drawable.po2, Color(0xFF25575C)) {
-                        navController.navigate("Oxigenación Sanguínea")
+                    SensorCard(
+                        "Oxigenación",
+                        "98%",
+                        R.drawable.po2,
+                        Color(0xFF25575C)
+                    ) {
+                        navController.navigate("oxigenacion/$pacienteId")
                     }
-                    SensorCard("Ubicación", "Ver ubicación", R.drawable.location, Color(0xFF449FA8)) {
-                        navController.navigate("ubicacion") // 🔹 Navega a la pantalla del mapa
+                    SensorCard(
+                        "Ubicación",
+                        "Ver ubicación",
+                        R.drawable.location,
+                        Color(0xFF449FA8)
+                    ) {
+                        navController.navigate("ubicacion/$pacienteId")
                     }
                 }
             }
         }
     }
 }
-
 @Composable
 fun SensorCard(title: String, value: String, icon: Int, backgroundColor: Color, onClick: () -> Unit) {
     Card(

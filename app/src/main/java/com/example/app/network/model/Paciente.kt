@@ -37,3 +37,14 @@ data class UserInfo(
     val Cuidador: String?,
     val Paciente: String?
 )
+data class AgendaItem(
+    val id: Int,
+    val nombre: String,
+    val descripcion: String,
+    val fecha: String,
+    val hora: String,
+    val estado: String,
+    val paciente_id: Int,
+    val paciente_nombre: String,
+    val paciente_apellido: String
+)

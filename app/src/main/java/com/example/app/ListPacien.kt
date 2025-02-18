@@ -69,8 +69,6 @@ fun ListaScreen(navController: NavController) {
                     CardItem(
                         name = "${paciente.firstname} ${paciente.lastname}",
                         gender = paciente.gender,
-                        // Aquí podrías calcular la edad basada en birthdate
-                        // Por ahora mostraremos la fecha de nacimiento
                         birthdate = paciente.birthdate,
                         modifier = Modifier.clickable {
                             navController.navigate("detalles/${relacion.PacienteID}")

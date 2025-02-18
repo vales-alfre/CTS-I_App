@@ -1,6 +1,8 @@
 package com.example.app.network
 
 // Archivo: network/ApiClient.kt
+import com.example.app.AgendaCreateRequest
+import com.example.app.network.model.AgendaItem
 import com.example.app.network.model.AuthResponse
 import com.example.app.network.model.PacienteCuidadorRelacion
 import okhttp3.OkHttpClient
@@ -11,6 +13,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
@@ -42,7 +45,17 @@ interface ApiService {
     @GET("/pacientecuidador/getAll") // Ajusta la ruta según tu API
     suspend fun getPacientes(): Response<List<PacienteCuidadorRelacion>>
 
+    @GET("pacientes/{id}")
+    suspend fun getPacienteById(@Path("id") id: String): Response<PacienteCuidadorRelacion>
+
+    @GET("agenda/getAll")
+    suspend fun getAllAgendas(): Response<List<AgendaItem>>
+
+    @POST("/agenda/insert")
+    suspend fun insertAgenda(@Body agenda: AgendaCreateRequest): Response<Unit>
 }
+
+
 
 data class LoginRequest(val email: String, val password: String)
 
