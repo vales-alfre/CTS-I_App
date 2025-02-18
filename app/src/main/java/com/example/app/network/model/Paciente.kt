@@ -48,3 +48,15 @@ data class AgendaItem(
     val paciente_nombre: String,
     val paciente_apellido: String
 )
+data class MedicamentoItem(
+    val ID: Int,
+    val CreatedAt: String,
+    val UpdatedAt: String,
+    val DeletedAt: String?,
+    val nombre: String,
+    val descripcion: String
+)
+data class MedicamentoCreateRequest(
+    val nombre: String,
+    val descripcion: String
+)

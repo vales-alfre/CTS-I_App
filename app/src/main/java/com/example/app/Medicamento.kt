@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -20,32 +21,53 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-
-data class Medicamento(
-    val nombre: String,
-    val dosis: String,
-    val frecuencia: String
-)
+import com.example.app.network.ApiClient
+import com.example.app.network.model.MedicamentoItem
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListaMedicamentosScreen(navController: NavHostController, pacienteId: String?) {
-    val medicamentos = remember { mutableStateListOf(
-        Medicamento("Paracetamol", "500 mg", "Cada 8 horas"),
-        Medicamento("Ibuprofeno", "400 mg", "Cada 12 horas"),
-        Medicamento("Omeprazol", "20 mg", "Antes del desayuno")
-    )}
+    var medicamentos by remember { mutableStateOf<List<MedicamentoItem>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var error by remember { mutableStateOf<String?>(null) }
     var showDialog by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope() // Añade esto
+
+    // Función para cargar medicamentos
+    val loadMedicamentos = {
+        scope.launch {
+            try {
+                val response = ApiClient.instance.getAllMedicamentos()
+                if (response.isSuccessful) {
+                    medicamentos = response.body() ?: emptyList()
+                } else {
+                    error = "Error al cargar los medicamentos"
+                }
+            } catch (e: Exception) {
+                error = "Error: ${e.message}"
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    // Cargar medicamentos cuando se inicia la pantalla
+    LaunchedEffect(key1 = true) {
+        loadMedicamentos()
+    }
 
     Scaffold(
         topBar = {
@@ -64,32 +86,65 @@ fun ListaMedicamentosScreen(navController: NavHostController, pacienteId: String
             }
         }
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(medicamentos) { medicamento ->
-                MedicamentoCard(medicamento)
+        when {
+            isLoading -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator(color = Color(0xFF0099A8))
+                }
+            }
+            error != null -> {
+                Text(
+                    text = error!!,
+                    color = Color.Red,
+                    modifier = Modifier
+                        .padding(paddingValues)
+                        .padding(16.dp)
+                )
+            }
+            medicamentos.isEmpty() -> {
+                Text(
+                    text = "No hay medicamentos registrados",
+                    modifier = Modifier
+                        .padding(paddingValues)
+                        .padding(16.dp)
+                )
+            }
+            else -> {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(medicamentos) { medicamento ->
+                        MedicamentoCard(medicamento)
+                    }
+                }
             }
         }
-    }
 
-    if (showDialog) {
-        RegistrarMedicamentoDialog(
-            onDismiss = { showDialog = false },
-            onSave = { nuevoMedicamento ->
-                medicamentos.add(nuevoMedicamento)
-                showDialog = false
-            }
-        )
+        // Agregar el diálogo aquí
+        if (showDialog) {
+            RegistrarMedicamentoDialog(
+                onDismiss = { showDialog = false },
+                onSave = {
+                    showDialog = false
+                    isLoading = true
+                    loadMedicamentos()
+                }
+            )
+        }
     }
 }
-
 @Composable
-fun MedicamentoCard(medicamento: Medicamento) {
+fun MedicamentoCard(medicamento: MedicamentoItem) {
     Card(
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier.fillMaxWidth(),
@@ -98,8 +153,13 @@ fun MedicamentoCard(medicamento: Medicamento) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(medicamento.nombre, fontSize = 18.sp, color = Color.White)
-            Text("Dosis: ${medicamento.dosis}", fontSize = 14.sp, color = Color(0xFF63E8F5))
-            Text("Frecuencia: ${medicamento.frecuencia}", fontSize = 14.sp, color = Color(0xFF63E8F5))
+            Text(
+                text = medicamento.descripcion,
+                fontSize = 14.sp,
+                color = Color(0xFF63E8F5)
+            )
         }
     }
 }
+
+

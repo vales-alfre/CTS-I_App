@@ -68,7 +68,7 @@ fun DetallesScreen(navController: NavController, pacienteId: String?) {
                         Color(0xFFFFA07A)
                     ) {
                         // Asegurarse de que el ID se pase en la navegación
-                        navController.navigate("monitor_cardiaco/$pacienteId")
+                        navController.navigate("Monitor Cardíaco")
                     }
                     SensorCard(
                         "Temperatura",
@@ -76,7 +76,7 @@ fun DetallesScreen(navController: NavController, pacienteId: String?) {
                         R.drawable.temperatura,
                         Color(0xFFFFD700)
                     ) {
-                        navController.navigate("monitor_temperatura/$pacienteId")
+                        navController.navigate("Monitor de Temperatura")
                     }
                 }
 
@@ -118,7 +118,7 @@ fun DetallesScreen(navController: NavController, pacienteId: String?) {
                         R.drawable.po2,
                         Color(0xFF25575C)
                     ) {
-                        navController.navigate("oxigenacion/$pacienteId")
+                        navController.navigate("Oxigenación Sanguínea")
                     }
                     SensorCard(
                         "Ubicación",
@@ -126,7 +126,7 @@ fun DetallesScreen(navController: NavController, pacienteId: String?) {
                         R.drawable.location,
                         Color(0xFF449FA8)
                     ) {
-                        navController.navigate("ubicacion/$pacienteId")
+                        navController.navigate("ubicacion")
                     }
                 }
             }

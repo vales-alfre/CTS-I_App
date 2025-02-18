@@ -4,6 +4,8 @@ package com.example.app.network
 import com.example.app.AgendaCreateRequest
 import com.example.app.network.model.AgendaItem
 import com.example.app.network.model.AuthResponse
+import com.example.app.network.model.MedicamentoCreateRequest
+import com.example.app.network.model.MedicamentoItem
 import com.example.app.network.model.PacienteCuidadorRelacion
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -53,6 +55,12 @@ interface ApiService {
 
     @POST("/agenda/insert")
     suspend fun insertAgenda(@Body agenda: AgendaCreateRequest): Response<Unit>
+
+    @GET("medicamento/getAll")
+    suspend fun getAllMedicamentos(): Response<List<MedicamentoItem>>
+
+    @POST("medicamento/insert")
+    suspend fun insertMedicamento(@Body medicamento: MedicamentoCreateRequest): Response<Unit>
 }
 
 
