@@ -1,0 +1,106 @@
+{
+  "project_info": {
+    "project_number": "798041694675",
+    "project_id": "notificauteq-19631",
+    "storage_bucket": "notificauteq-19631.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:798041694675:android:fbb9db1a6cda85bb0ecf26",
+        "android_client_info": {
+          "package_name": "com.appdist"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCP6i2rcvn5Q5V4cU778kbxSuXTgt3sKts"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "798041694675-5qa9pne7mjttpjijc7rk8483kvkh6p2e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:798041694675:android:74faf1a7191fde5d0ecf26",
+        "android_client_info": {
+          "package_name": "com.example.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCP6i2rcvn5Q5V4cU778kbxSuXTgt3sKts"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "798041694675-5qa9pne7mjttpjijc7rk8483kvkh6p2e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:798041694675:android:2e0b632ecfca914e0ecf26",
+        "android_client_info": {
+          "package_name": "com.healthtracker_mov"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCP6i2rcvn5Q5V4cU778kbxSuXTgt3sKts"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "798041694675-5qa9pne7mjttpjijc7rk8483kvkh6p2e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:798041694675:android:48a5f997c107bcbd0ecf26",
+        "android_client_info": {
+          "package_name": "com.miappmessaging"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCP6i2rcvn5Q5V4cU778kbxSuXTgt3sKts"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "798041694675-5qa9pne7mjttpjijc7rk8483kvkh6p2e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

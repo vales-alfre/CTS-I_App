@@ -4,6 +4,8 @@ import HeartRateScreen
 import OxygenScreen
 import TemperatureScreen
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -25,12 +27,14 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import android.Manifest
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -46,6 +51,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -55,6 +61,7 @@ import com.example.app.network.ApiClient
 import com.example.app.network.LoginRequest
 import com.example.app.ui.theme.AppTheme
 import com.example.app.util.SessionManager
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
 
 
@@ -62,13 +69,47 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        initializeFirebase()
+        requestNotificationPermission()
         setContent {
             AppTheme {
                 AppNavigation()
             }
         }
     }
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) !=
+                PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    123
+                )
+            }
+        }
+    }
+
+    @androidx.annotation.OptIn(UnstableApi::class)
+    private fun initializeFirebase() {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val token = task.result
+                // Ahora podemos usar this correctamente
+                getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+                    .edit()
+                    .putString("device_token", token)
+                    .apply()
+
+                Log.d("FCM", "Token: $token")
+            } else {
+                Log.w("FCM", "Error al obtener el token de FCM", task.exception)
+            }
+        }
+    }
+
 }
+
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavigation() {
@@ -105,13 +146,20 @@ fun AppNavigation() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(navController: NavHostController) {
+    val context = LocalContext.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var deviceToken by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+    LaunchedEffect(Unit) {
+        deviceToken = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            .getString("device_token", "") ?: ""
+        Log.d("LoginScreen", "Device Token recuperado: $deviceToken") // Para debug
+    }
 
     fun isValidEmail(email: String): Boolean {
         val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\$"
@@ -234,7 +282,7 @@ fun LoginScreen(navController: NavHostController) {
                         coroutineScope.launch {
                             try {
                                 val response = ApiClient.instance.login(
-                                    LoginRequest(email, password)
+                                    LoginRequest(email, password, deviceToken = deviceToken)
                                 )
                                 if (response.isSuccessful) {
                                     val authResponse = response.body() // Retrofit deserializa automáticamente
@@ -245,6 +293,7 @@ fun LoginScreen(navController: NavHostController) {
                                         passwordError = "Error: No se pudo obtener la información del usuario"
                                     }
                                 } else {
+                                    Log.e("LoginScreen", "Error en login: ${response.errorBody()?.string()}")
                                     passwordError = "Error en la autenticación: ${response.code()}"
                                 }
                             } catch (e: Exception) {
